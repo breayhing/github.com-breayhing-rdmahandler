@@ -574,14 +574,14 @@ int resources_create(struct resources *res)
 	qp_init_attr.recv_cq = res->cq;
 
 	// 这个字段指定了发送队列（Send Queue）可以容纳的最大工作请求（Work Request）数。在你的代码中，这个值被设置为 1，意味着发送队列一次只能容纳一个发送工作请求。
-	qp_init_attr.cap.max_send_wr = 1;
+	qp_init_attr.cap.max_send_wr = 10;
 
 	// 这个字段指定了接收队列（Receive Queue）可以容纳的最大工作请求数。在你的代码中，这个值也被设置为 1，意味着接收队列一次只能容纳一个接收工作请求。
-	qp_init_attr.cap.max_recv_wr = 1;
+	qp_init_attr.cap.max_recv_wr = 10;
 
 	// : 设置每个工作请求的最大散布/聚集元素（Scatter/Gather Element）数为 1。
-	qp_init_attr.cap.max_send_sge = 1;
-	qp_init_attr.cap.max_recv_sge = 1;
+	qp_init_attr.cap.max_send_sge = 10;
+	qp_init_attr.cap.max_recv_sge = 10;
 
 	// 使用 ibv_create_qp 函数根据提供的属性创建队列对。
 	res->qp = ibv_create_qp(res->pd, &qp_init_attr);
@@ -1100,7 +1100,7 @@ void usage(const char *argv0)
  ******************************************************************************/
 int receive_message(struct resources *res, const char *entity)
 {
-	printf("%s: Enter your message (type 'exit' to end): ", entity);
+	printf("%s: Enter your message to send (type 'exit' to end): ", entity);
 	if (fgets(res->buf, MSG_SIZE, stdin) == NULL || strcmp(res->buf, "exit\n") == 0)
 	{
 		return 1; // return 1 indicates exit
