@@ -1,3 +1,3 @@
-module github.com/breayhing/reader_writer
+module github.com/breayhing/rdmahandler
 
 go 1.21.3
