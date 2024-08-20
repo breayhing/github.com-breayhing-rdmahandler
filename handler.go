@@ -1,5 +1,5 @@
-// Package rdmahandler 提供了用于RDMA（Remote Direct Memory Access）通信的处理程序和接口。
-// 它封装了与RDMA相关的操作，允许用户方便地初始化服务器或客户端，进行数据读写，以及销毁资源。
+// Package rdmahandler provides handlers and interfaces for RDMA (Remote Direct Memory Access) communication.
+// It encapsulates RDMA-related operations, allowing users to easily initialize servers or clients, read and write data, and destroy resources.
 package rdmahandler
 
 /*
@@ -20,12 +20,11 @@ type RDMACommunicator interface {
 	Destroy(res *RDMAResources) error
 }
 
-// RDMAHandler 实现了 RDMACommunicator 接口，提供了具体的 RDMA 通信功能。
-// 它包含了为 RDMA 通信所需的所有操作，包括服务器和客户端的初始化、
-// 数据读写，以及资源的释放。
+// RDMAHandler implements the RDMACommunicator interface and provides specific RDMA communication functions.
+// It contains all the operations required for RDMA communication, including server and client initialization, data reading and writing, and resource release.
 //
-// 作为 RDMACommunicator 的具体实现，RDMAHandler 提供了这些方法的具体逻辑，
-// 使得可以在 RDMA 网络环境中高效地进行数据传输和管理。
+// As a concrete implementation of RDMACommunicator, RDMAHandler provides the concrete logic of these methods,
+// enabling efficient data transmission and management in an RDMA network environment.
 //
 // Example of usage:
 //

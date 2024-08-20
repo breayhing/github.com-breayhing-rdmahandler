@@ -29,38 +29,41 @@ static inline uint64_t ntohll(uint64_t x) { return x; }
 #error __BYTE_ORDER is neither __LITTLE_ENDIAN nor __BIG_ENDIAN
 #endif
 
+/* structure of test parameters */
 struct config_t
 {
-    const char *dev_name; /* IB device name */
-    char *server_name;    /* server host name */
-    u_int32_t tcp_port;   /* server TCP port */
-    int ib_port;          // 本地使用的 InfiniBand 端口号
-    int gid_idx;          // 用于选择要使用的全局唯一标识符（Global Identifier，GID）的索引
+    const char *dev_name;         /* IB device name */
+    char *server_name;            /* server host name */
+    u_int32_t tcp_port;           /* server TCP port */
+    int ib_port;                  /* local IB port to work with */
+    int gid_idx;                  /* gid index to use. RoCE requires GID, InfiniBand not required if in one subnet */
 };
 
+/* structure to exchange data which is needed to connect the QPs */
 struct cm_con_data_t
 {
-    uint64_t addr;         // 缓冲区的内存地址。
-    uint32_t rkey;         // 远程密钥，用于远程访问 RDMA 缓冲区。
-    uint32_t qp_num;       // 队列对的编号。
-    uint16_t lid;          // 本地 InfiniBand 端口的本地标识符（Local Identifier）
-    uint8_t gid[16];       /* gid */
-} __attribute__((packed)); 
+    uint64_t addr;                /* Buffer address */
+    uint32_t rkey;                /* Remote key */
+    uint32_t qp_num;              /* QP number */
+    uint16_t lid;                 /* LID of the IB port */
+    uint8_t gid[16];              /* gid */
+} __attribute__ ((packed));
 
+/* structure of system resources */
 struct resources
 {
-    struct ibv_device_attr
-        device_attr;
-    struct ibv_port_attr port_attr;    /* InfiniBand 端口的属性*/
-    struct cm_con_data_t remote_props; /*存储用于连接远程端的值。 */
-    struct ibv_context *ib_ctx;        /*指向 InfiniBand 设备上下文的指针 */
-    struct ibv_pd *pd;                 /* 保护域（Protection Domain）的句柄。*/
-    struct ibv_cq *cq;                 /* 完成队列（Completion Queue）的句柄 */
-    struct ibv_qp *qp;                 /* 队列对的句柄。*/
-    struct ibv_mr *mr;                 /* 指向用于 RDMA 操作的内存区域（Memory Region）的句柄。 */
-    char *buf;                         /* 用于 RDMA 和发送操作的内存缓冲区指针 */
-    int sock;                          /* TCP 套接字的文件描述符。 */
+    struct ibv_device_attr device_attr;   /* Device attributes */
+    struct ibv_port_attr port_attr;       /* IB port attributes */
+    struct cm_con_data_t remote_props;    /* values to connect to remote side */
+    struct ibv_context *ib_ctx;           /* device handle */
+    struct ibv_pd *pd;                    /* PD handle */
+    struct ibv_cq *cq;                    /* CQ handle */
+    struct ibv_qp *qp;                    /* QP handle */
+    struct ibv_mr *mr;                    /* MR handle for buf */
+    char *buf;                            /* memory buffer pointer, used for RDMA and send ops */
+    int sock;                             /* TCP socket file descriptor */
 };
+
 extern struct config_t config;
 
 int sock_connect(const char *servername, int port);
