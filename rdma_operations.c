@@ -874,9 +874,11 @@ int connect_qp(struct resources *res)
 		}
 	}
 	else
+	{
 		fprintf(stdout, "using InfiniBand subnet connection\n");
-	// 意味着不需要使用 GID。这种情况下，将 my_gid 清零。这通常用于仅在 InfiniBand 子网内通信的情况。
-	memset(&my_gid, 0, sizeof my_gid);
+		// 意味着不需要使用 GID。这种情况下，将 my_gid 清零。这通常用于仅在 InfiniBand 子网内通信的情况。
+		memset(&my_gid, 0, sizeof my_gid);
+	}
 
 	// 设置本地缓冲区地址。htonll 将地址从主机字节顺序转换为网络字节顺序。
 	local_con_data.addr = htonll((uintptr_t)res->buf);
