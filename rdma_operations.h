@@ -15,9 +15,9 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#define MAX_POLL_CQ_TIMEOUT 2000
-#define MSG "******************************************************************************/"
-#define MSG_SIZE (strlen(MSG) + 6)
+#define MAX_POLL_CQ_TIMEOUT 20000
+#define MSG "1234567890"
+#define MSG_SIZE (10485760)
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 
 static inline uint64_t htonll(uint64_t x) { return bswap_64(x); }

@@ -8,6 +8,7 @@ package rdmahandler
 */
 import "C"
 import (
+	"encoding/binary"
 	"fmt"
 	"unsafe"
 )
@@ -15,8 +16,8 @@ import (
 type RDMACommunicator interface {
 	InitServer(port int) (*RDMAResources, error)
 	InitClient(ip string, port int) (*RDMAResources, error)
-	Write(res *RDMAResources, contents string, character string) error
-	Read(res *RDMAResources, character string) (string, error)
+	Write(res *RDMAResources, contents []byte, character string) error
+	Read(res *RDMAResources, character string) ([]byte, error)
 	Destroy(res *RDMAResources) error
 }
 
@@ -101,18 +102,20 @@ func (h *RDMAHandler) InitClient(ip string, port int) (*RDMAResources, error) {
 //
 // Example:
 //
-//	err := h.Write(clientRes, "Hello RDMA", "client")
+//  content, err := os.ReadFile("example.txt")
+//  if err != nil {
+// 		log.Fatal(err)
+//	}
+//	err = h.Write(clientRes, content, "client")
 //	if err != nil {
 //	    log.Fatalf("RDMA write failed: %v", err)
 //	}
-func (h *RDMAHandler) Write(res *RDMAResources, contents string, character string) error {
+func (h *RDMAHandler) Write(res *RDMAResources, contents []byte, character string) error {
 	if err := syncData(res); err != nil {
 		return err
 	}
-	cContents := C.CString(contents)
-	defer C.free(unsafe.Pointer(cContents))
 
-	C.strcpy(res.res.buf, cContents)
+	C.memcpy(unsafe.Pointer(res.res.buf), unsafe.Pointer(&contents[0]), C.ulong(binary.Size(contents)));
 
 	if C.post_send(&res.res, C.IBV_WR_RDMA_WRITE) != 0 {
 		return fmt.Errorf("%s: failed to post SR", character)
@@ -147,20 +150,23 @@ func (h *RDMAHandler) Write(res *RDMAResources, contents string, character strin
 //	    log.Fatalf("RDMA read failed: %v", err)
 //	}
 //	fmt.Println("Received data:", data)
-func (h *RDMAHandler) Read(res *RDMAResources, character string) (string, error) {
+func (h *RDMAHandler) Read(res *RDMAResources, character string) ([]byte, error) {
 	if err := syncData(res); err != nil {
-		return "", err
+		return nil, err
 	}
 	if C.post_send(&res.res, C.IBV_WR_RDMA_READ) != 0 {
-		return "", fmt.Errorf("%s: failed to post SR", character)
+		return nil, fmt.Errorf("%s: failed to post SR", character)
 	}
 	if C.poll_completion(&res.res) != 0 {
-		return "", fmt.Errorf("%s: poll completion after post_send failed", character)
+		return nil, fmt.Errorf("%s: poll completion after post_send failed", character)
 	}
 	if err := syncData(res); err != nil {
-		return "", err
+		return nil, err
 	}
-	return C.GoString(res.res.buf), nil
+
+	byteSlice := C.GoBytes(unsafe.Pointer(res.res.buf), C.int(C.strlen(res.res.buf)))
+
+	return byteSlice, nil
 }
 
 // Destroy releases the resources allocated for an RDMA connection.
